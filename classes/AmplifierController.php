@@ -1,6 +1,7 @@
 <?php
 
 use Intcode as Amplifier;
+use PhaseUtility as PossiblePhaseGenerator;
 
 class AmplifierController
 {
