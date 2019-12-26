@@ -30,6 +30,12 @@ if ($run_test) {
     $detector->calcObservableCount();
     Test::equal('test 5', $detector->getBestLocation()['coordinate'], '11,13');
 
+    $best_location = $detector->getBestLocation();
+    $vape_orders = $detector->getVapeOrder($best_location['coordinate']);
+
+    $coords = $vape_orders[199];
+    Test::equal('test 6', 100 * $coords[0] + $coords[1], '802');
+
     echo "\n";
 }
 // test end
@@ -42,3 +48,8 @@ $best_location = $detector->getBestLocation();
 
 echo 'coords: ', $best_location['coordinate'], "\n";
 echo 'count: ', $best_location['count'], "\n";
+
+$vape_orders = $detector->getVapeOrder($best_location['coordinate']);
+$coords = $vape_orders[199];
+
+echo 100 * $coords[0] + $coords[1], "\n";

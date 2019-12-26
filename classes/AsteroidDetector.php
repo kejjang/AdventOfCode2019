@@ -52,6 +52,19 @@ class AsteroidDetector
         return $key;
     }
 
+    private function genQuadrantKey($x, $y, $reverse = false)
+    {
+        if ($reverse) {
+            [$x, $y] = [$y, $x];
+        }
+
+        $key_x = $x == 0 ? 'Z' : ($x < 0 ? 'N' : 'P');
+        $key_y = $y == 0 ? 'Z' : ($y < 0 ? 'N' : 'P');
+
+        $key = $key_x . $key_y;
+        return $key;
+    }
+
     private function parseCoordinates()
     {
         $this->asteroids = [];
@@ -59,7 +72,7 @@ class AsteroidDetector
             foreach ($row as $x => $obj) {
                 if ($obj == '#') {
                     $key = $this->genKey($x, $y);
-                    $this->asteroids[$key] = ['coordinate' => [$x, $y], 'observable' => 0];
+                    $this->asteroids[$key] = ['coordinate' => [$x, $y], 'observable' => []];
                 }
             }
         }
@@ -71,14 +84,23 @@ class AsteroidDetector
         }
     }
 
-    public function getAsteroids()
+    public function getAsteroids($coords = false)
     {
-        return $this->asteroids;
+        if (is_string($coords)) {
+            $coords = explode(',', $coords);
+        }
+        if ($coords) {
+            return $this->asteroids[$this->genKey($coords[0], $coords[1])];
+        } else {
+            return $this->asteroids;
+        }
     }
 
     public function calcObservableCount()
     {
         foreach ($this->asteroids as $idx1 => $astro1) {
+            $this->asteroids[$idx1]['observable'] = [];
+
             $x1 = $astro1['coordinate'][0];
             $y1 = $astro1['coordinate'][1];
 
@@ -90,8 +112,7 @@ class AsteroidDetector
                 $y2 = $astro2['coordinate'][1];
 
                 if ($this->clearBetweenUs($x1, $y1, $x2, $y2)) {
-                    // echo $x1, ', ', $y1, ', ', $x2, ', ', $y2, "\n";
-                    $this->asteroids[$idx1]['observable']++;
+                    $this->asteroids[$idx1]['observable'][] = [$x2, $y2];
                 }
             }
         }
@@ -149,13 +170,116 @@ class AsteroidDetector
         $aster = array_values($this->asteroids);
 
         usort($aster, function ($a, $b) {
-            if ($a['observable'] == $b['observable']) {
+            if (count($a['observable']) == count($b['observable'])) {
                 return 0;
             } else {
-                return $a['observable'] < $b['observable'] ? 1 : -1;
+                return count($a['observable']) < count($b['observable']) ? 1 : -1;
             }
         });
 
-        return ['coordinate' => implode(',', $aster[0]['coordinate']), 'count' => $aster[0]['observable']];
+        return ['coordinate' => implode(',', $aster[0]['coordinate']), 'count' => count($aster[0]['observable'])];
+    }
+
+    private function vapeAsteroids($asters){
+        foreach($asters as $aster){
+            $key = $this->genKey($aster[0], $aster[1]);
+            unset($this->asteroids[$key]);
+        }
+    }
+
+    public function getVapeOrder($coords = false)
+    {
+        if ($coords == false) {
+            return false;
+        }
+
+        $orders = [];
+        $asteroids_data_backup = $this->asteroids;
+
+        while(count($this->asteroids) > 1){
+            $round_orders = $this->getVapeOrderRound($coords);
+            $orders = array_merge($orders, $round_orders);
+            $this->vapeAsteroids($round_orders);
+            $this->calcObservableCount();
+        }
+
+        $this->asteroids = $asteroids_data_backup;
+        return $orders;
+    }
+
+    private function getVapeOrderRound($coords = false)
+    {
+        if ($coords == false) {
+            return false;
+        }
+
+        $orders = [];
+        $divisions = [
+            0 => [], // up
+            1 => [], // 1st quadrant
+            2 => [], // right
+            3 => [], // 4th quadrant
+            4 => [], // down
+            5 => [], // 3rd quadrant
+            6 => [], // left
+            7 => [], // 2nd quadrant
+        ];
+
+        $asteroid_data = $this->getAsteroids($coords);
+
+        $base_x = $asteroid_data['coordinate'][0];
+        $base_y = $asteroid_data['coordinate'][1];
+
+        foreach ($asteroid_data['observable'] as $aster) {
+            $relative_x = $aster[0] - $base_x;
+            $relative_y = $aster[1] - $base_y;
+
+            $quadrant_key = $this->genQuadrantKey($relative_x, $relative_y);
+
+            switch ($quadrant_key) {
+                case 'ZN':
+                    $divisions[0][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs($relative_y)];
+                    break;
+                case 'PN':
+                    $divisions[1][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs(floatval($relative_y / $relative_x))];
+                    break;
+                case 'PZ':
+                    $divisions[2][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs($relative_x)];
+                    break;
+                case 'PP':
+                    $divisions[3][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs(floatval($relative_x / $relative_y))];
+                    break;
+                case 'ZP':
+                    $divisions[4][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs($relative_y)];
+                    break;
+                case 'NP':
+                    $divisions[5][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs(floatval($relative_y / $relative_x))];
+                    break;
+                case 'NZ':
+                    $divisions[6][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs($relative_x)];
+                    break;
+                case 'NN':
+                    $divisions[7][] = ['coords' => [$relative_x, $relative_y], 'angle_factor' => abs(floatval($relative_x / $relative_y))];
+                    break;
+            }
+        }
+
+        foreach ($divisions as $div) {
+            usort($div, function ($a, $b) {
+                if ($a['angle_factor'] == $b['angle_factor']) {
+                    return 0;
+                } else {
+                    return $a['angle_factor'] < $b['angle_factor'] ? 1 : -1;
+                }
+            });
+
+            $div = array_map(function ($aster) use ($base_x, $base_y) {
+                return [$aster['coords'][0] + $base_x, $aster['coords'][1] + $base_y];
+            }, $div);
+
+            $orders = array_merge($orders, $div);
+        }
+
+        return $orders;
     }
 }
