@@ -11,7 +11,7 @@ if ($run_test) {
     $output = [];
     while ($computer->getStatus() != Intcode::STATUS_HALT) {
         [$op, $status] = $computer->calc();
-        if($op == '04'){
+        if ($op == '04') {
             $output[] = $computer->getSignal();
         }
     }

@@ -180,8 +180,9 @@ class AsteroidDetector
         return ['coordinate' => implode(',', $aster[0]['coordinate']), 'count' => count($aster[0]['observable'])];
     }
 
-    private function vapeAsteroids($asters){
-        foreach($asters as $aster){
+    private function vapeAsteroids($asters)
+    {
+        foreach ($asters as $aster) {
             $key = $this->genKey($aster[0], $aster[1]);
             unset($this->asteroids[$key]);
         }
@@ -196,7 +197,7 @@ class AsteroidDetector
         $orders = [];
         $asteroids_data_backup = $this->asteroids;
 
-        while(count($this->asteroids) > 1){
+        while (count($this->asteroids) > 1) {
             $round_orders = $this->getVapeOrderRound($coords);
             $orders = array_merge($orders, $round_orders);
             $this->vapeAsteroids($round_orders);
