@@ -5,27 +5,27 @@ $run_test = true;
 
 // test start
 if ($run_test) {
-    $map = explode("\n", ".#..#\n.....\n#####\n....#\n...##");
+    $map = Reader::split("\n", 'test/day10-test1');
     $detector = new AsteroidDetector($map);
     $detector->calcObservableCount();
     Test::equal('test 1', $detector->getBestLocation()['coordinate'], '3,4');
 
-    $map = explode("\n", "......#.#.\n#..#.#....\n..#######.\n.#.#.###..\n.#..#.....\n..#....#.#\n#..#....#.\n.##.#..###\n##...#..#.\n.#....####");
+    $map = Reader::split("\n", 'test/day10-test2');
     $detector = new AsteroidDetector($map);
     $detector->calcObservableCount();
     Test::equal('test 2', $detector->getBestLocation()['coordinate'], '5,8');
 
-    $map = explode("\n", "#.#...#.#.\n.###....#.\n.#....#...\n##.#.#.#.#\n....#.#.#.\n.##..###.#\n..#...##..\n..##....##\n......#...\n.####.###.");
+    $map = Reader::split("\n", 'test/day10-test3');
     $detector = new AsteroidDetector($map);
     $detector->calcObservableCount();
     Test::equal('test 3', $detector->getBestLocation()['coordinate'], '1,2');
 
-    $map = explode("\n", ".#..#..###\n####.###.#\n....###.#.\n..###.##.#\n##.##.#.#.\n....###..#\n..#.#..#.#\n#..#.#.###\n.##...##.#\n.....#.#..");
+    $map = Reader::split("\n", 'test/day10-test4');
     $detector = new AsteroidDetector($map);
     $detector->calcObservableCount();
     Test::equal('test 4', $detector->getBestLocation()['coordinate'], '6,3');
 
-    $map = explode("\n", ".#..##.###...#######\n##.############..##.\n.#.######.########.#\n.###.#######.####.#.\n#####.##.#.##.###.##\n..#####..#.#########\n####################\n#.####....###.#.#.##\n##.#################\n#####.##.###..####..\n..######..##.#######\n####.##.####...##..#\n.#####..#.######.###\n##...#.##########...\n#.##########.#######\n.####.#.###.###.#.##\n....##.##.###..#####\n.#.#.###########.###\n#.#.#.#####.####.###\n###.##.####.##.#..##");
+    $map = Reader::split("\n", 'test/day10-test5');
     $detector = new AsteroidDetector($map);
     $detector->calcObservableCount();
     Test::equal('test 5', $detector->getBestLocation()['coordinate'], '11,13');

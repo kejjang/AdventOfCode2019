@@ -5,7 +5,7 @@ $run_test = true;
 
 // test start
 if ($run_test) {
-    $intcode = '109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99';
+    $intcode = Reader::read('test/day09-test1');
     $computer = new Intcode($intcode);
 
     $output = [];
@@ -16,10 +16,9 @@ if ($run_test) {
         }
     }
     $output = implode(',', $output);
-
     Test::equal('test 1', $output, $intcode);
 
-    $intcode = '1102,34915192,34915192,7,4,7,99,0';
+    $intcode = Reader::read('test/day09-test2');
     $computer = new Intcode($intcode);
 
     while ($computer->getStatus() != Intcode::STATUS_HALT) {
@@ -28,7 +27,7 @@ if ($run_test) {
 
     Test::equal('test 2', strlen($computer->getSignal()), 16);
 
-    $intcode = '104,1125899906842624,99';
+    $intcode = Reader::read('test/day09-test3');
     $computer = new Intcode($intcode);
 
     while ($computer->getStatus() != Intcode::STATUS_HALT) {

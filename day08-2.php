@@ -1,12 +1,13 @@
 <?php
 include_once __DIR__ . "/autoload.php";
+
 $run_test = true;
 
 // test start
 if ($run_test) {
     $w = 2;
     $h = 2;
-    $img_code = '0222112222120000';
+    $img_code = Reader::read('test/day08-test1');
     $debug = false;
 
     $decoder = new ImageDecoder($w, $h, $img_code, $debug);
