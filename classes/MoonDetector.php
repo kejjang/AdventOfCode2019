@@ -51,6 +51,15 @@ class MoonDetector
         return true;
     }
 
+    private function reset()
+    {
+        foreach ($this->moons as $moon_idx => $moon) {
+            $this->moons[$moon_idx]['pos'] = $this->moons[$moon_idx]['pos_init'];
+            $this->moons[$moon_idx]['vel'] = [0, 0, 0];
+        }
+        return true;
+    }
+
     private function addValues(&$val1, $val2)
     {
         for ($i = 0; $i < count($val2); $i++) {
@@ -60,7 +69,7 @@ class MoonDetector
         return $val1;
     }
 
-    public function motionSimulator($steps)
+    public function motionSimulator($steps, $axis = false)
     {
         for ($i = 0; $i < $steps; $i++) {
             $temp_moons = $this->moons;
@@ -71,11 +80,19 @@ class MoonDetector
                     if ($moon_idx1 === $moon_idx2) {
                         continue;
                     } else {
-                        for ($j = 0; $j < 3; $j++) {
-                            if ($moon['pos'][$j] < $moon2['pos'][$j]) {
-                                $vel_diff[$j] += 1;
-                            } elseif ($moon['pos'][$j] > $moon2['pos'][$j]) {
-                                $vel_diff[$j] -= 1;
+                        if ($axis === false) {
+                            for ($j = 0; $j < 3; $j++) {
+                                if ($moon['pos'][$j] < $moon2['pos'][$j]) {
+                                    $vel_diff[$j] += 1;
+                                } elseif ($moon['pos'][$j] > $moon2['pos'][$j]) {
+                                    $vel_diff[$j] -= 1;
+                                }
+                            }
+                        } else {
+                            if ($moon['pos'][$axis] < $moon2['pos'][$axis]) {
+                                $vel_diff[$axis] += 1;
+                            } elseif ($moon['pos'][$axis] > $moon2['pos'][$axis]) {
+                                $vel_diff[$axis] -= 1;
                             }
                         }
                     }
@@ -100,31 +117,61 @@ class MoonDetector
 
     public function calcBackInitPosSteps()
     {
-        $count = 0;
-        do {
-            $this->motionSimulator(1);
-            $count++;
-            if ($count % 10000 == 0) {
-                echo $count, "\n";
-            }
-        } while (!$this->isAtInitPos($count));
-        return $count;
+        $all_counts = [];
+
+        for ($axis = 0; $axis < 3; $axis++) {
+            $count = 0;
+            $this->reset();
+
+            do {
+                $this->motionSimulator(1, $axis);
+                $count++;
+            } while (!$this->isAtInitPosAxis($axis));
+
+            $all_counts[] = $count;
+        }
+
+        return $this->getGroupLCM($all_counts);
     }
 
-    private function isAtInitPos()
+    private function isAtInitPosAxis($axis)
     {
-        $valid = 0;
         foreach ($this->moons as $moon) {
-            for ($i = 0; $i < 3; $i++) {
-                if ($moon['pos'][$i] == $moon['pos_init'][$i]) {
-                    $valid++;
-                }
-                if ($moon['vel'][$i] == 0) {
-                    $valid++;
-                }
+            if ($moon['pos'][$axis] != $moon['pos_init'][$axis]) {
+                return false;
+            }
+
+            if ($moon['vel'][$axis] != 0) {
+                return false;
             }
         }
 
-        return ($valid === 6 * count($this->moons)) ? true : false;
+        return true;
+    }
+
+    private function getGCD($a, $b)
+    {
+        // Greatest Common Divisor
+        if ($a == 0) {
+            return $b;
+        }
+        return $this->getGCD($b % $a, $a);
+    }
+
+    private function getLCM($a, $b)
+    {
+        // least common multiple
+        // https://www.geeksforgeeks.org/program-to-find-lcm-of-two-numbers/
+        return ($a * $b) / $this->getGCD($a, $b);
+    }
+
+    public function getGroupLCM($group)
+    {
+        $a = array_shift($group);
+        while (count($group) > 0) {
+            $b = array_shift($group);
+            $a = $this->getLCM($a, $b);
+        }
+        return $a;
     }
 }
