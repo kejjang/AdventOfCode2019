@@ -11,7 +11,7 @@ function autoload($class_name)
     }
     $file_name .= str_replace('_', DIRECTORY_SEPARATOR, $class_name) . '.php';
 
-    require $file_name;
+    require_once $file_name;
 }
 
 spl_autoload_register('autoload');
