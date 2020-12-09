@@ -14,5 +14,6 @@ class Operator(Base):
     def __part2(self, intcode):
         intcode = "2" + intcode[1:]
         game = ArcadeCabinet(intcode)
-        game.run_intcode()
-        print(game.get_draw_data())
+        score = game.run_intcode(play=True)
+        # print(game.get_draw_data())
+        return score

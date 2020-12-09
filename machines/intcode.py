@@ -26,13 +26,16 @@ class Intcode:
         self.__code[pos] = code
         return True
 
-    def set_inputs(self, inputs):
-        if type(inputs) is list:
-            self.__inputs += inputs
+    def set_inputs(self, inputs=None):
+        if inputs is None:
+            return False
         else:
-            self.__inputs += [inputs]
-        self.__status = self.STATUS_RUNNING
-        return True
+            if type(inputs) is list:
+                self.__inputs += inputs
+            else:
+                self.__inputs += [inputs]
+            self.__status = self.STATUS_RUNNING
+            return True
 
     def __get_code_value(self, mode, pos_index):
         pos_value = self.__code[self.__pos + pos_index]
@@ -104,6 +107,7 @@ class Intcode:
         elif op == "04":
             self.__signal = self.__get_code_value(mode1, 1)
 
+            self.__inputs = []
             self.__pos += 2
             self.__status = self.STATUS_WAIT
         elif op == "05":
