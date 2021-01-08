@@ -1,9 +1,9 @@
-from utilities.operator import Base
+from utilities.operator import OperatorBase
 from machines.phase_utility import PhaseUtility as PossiblePhaseGenerator
 from machines.amplifier_controller import AmplifierController
 
 
-class Operator(Base):
+class Operator(OperatorBase):
     def exec(self, part: int = 1):
         return (parts := {1: self.__part1, 2: self.__part2}).get(part if part in parts else 1)(self.data[0])
 

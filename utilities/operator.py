@@ -1,7 +1,7 @@
 from utilities.data import PuzzleInput
 
 
-class Base:
+class OperatorBase:
     def __init__(self, day_num: int = -1, to_int=False):
         if day_num in range(1, 26):
             self.load_data(day_num, to_int)
